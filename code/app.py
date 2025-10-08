@@ -2,44 +2,40 @@ import solara
 from mesa.visualization import Slider, SolaraViz, make_space_component, make_plot_component
 from model import MisinfoModel
 
-
 def agent_draw(agent):
-    """Display agents: blue = susceptible, red = infected."""
+    """Draw agents: blue = susceptible, red = infected"""
     if agent.state == "S":
         return {"color": "blue", "size": 5}
-    else:  # Infected
+    else:
         return {"color": "red", "size": 5}
 
-
-# Initiate the model
+# Initialize the model
 model = MisinfoModel()
 
+# for _ in range(10):  # Simulate 10 steps
+model.step()
 
-# Function to return collected data dynamically
-def get_data(model):
-    df = model.datacollector.get_model_vars_dataframe()
-    return df if not df.empty else None  # Avoid crashing on empty data
+# Print the collected data to verify
+df = model.datacollector.get_model_vars_dataframe()
+# print(df)  # Debugging step
 
+plot = make_plot_component({"Susceptible": "tab:blue", "Infected": "tab:green"})
 
-# Define a function to extract the correct measure for the plot
-def measure(model):
-    df = get_data(model)
-    if df is None:
-        return {}
-    return {
-        "Susceptible": df["Susceptible"].tolist(),
-        "Infected": df["Infected"].tolist(),
-    }
-
-
-# Create the plot component
-plot = make_plot_component(
-    measure=measure,
-    backend="matplotlib",
-)
+# # Function to extract data for plotting
+# def measure(model):
+#     df = model.datacollector.get_model_vars_dataframe()
+#     if df.empty:
+#         return {}
+#     return {
+#         "Susceptible": df["Susceptible"].tolist(),
+#         "Infected": df["Infected"].tolist(),
+#     }
 
 
-# Build the SolaraViz page
+# Plot component
+# plot = make_plot_component(measure=measure, backend="matplotlib")
+
+# Build SolaraViz page
 page = SolaraViz(
     model,
     components=[
@@ -48,11 +44,10 @@ page = SolaraViz(
     ],
     model_params={
         "N": Slider("Number of agents", value=100, min=10, max=200, step=10),
-        "beta": Slider("Infection prob (β)", value=0.3, min=0.0, max=1.0, step=0.05),
-        "gamma": Slider("Recovery prob (γ)", value=0.1, min=0.0, max=1.0, step=0.05),
-        "initial_infected": Slider("Initial infected fraction", value=0.05, min=0.0, max=1.0, step=0.05),
+        "beta": Slider("Infection probability", value=0.3, min=0.0, max=1.0, step=0.05),
+        "initial_infected": Slider("Initial infected", value=5, min=1, max=50, step=1),
     },
-    name="Misinformation SIS Model",
+    name="Misinformation SI Model",
 )
 
-page  # required for Solara
+page
